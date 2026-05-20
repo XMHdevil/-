@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人才看板 · 流程仪表盘</title>
+    <!-- 引入 Element Plus 默认样式 (作为基础，再通过自定义变量覆盖) -->
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+    <!-- 简洁图标库 (仅用于辅助展示) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ========== 以下为 index.scss 核心配色变量 (编译为CSS变量) ========== */
+        :root {
+            /* 主色扩展 */
+            --el-color-primary: #2f54eb;
+            --el-color-primary-light-3: #597ef7;
+            --el-color-primary-light-5: #85a5ff;
+            --el-color-primary-light-7: #adc6ff;
+            --el-color-primary-light-8: #d6e4ff;
+            --el-color-primary-light-9: #f0f5ff;
+            --el-color-primary-dark-2: #1d39c4;
+
+            --el-color-success: #52c41a;
+            --el-color-success-light-3: #73d13d;
+            --el-color-success-light-5: #95de64;
+            --el-color-success-light-7: #b7eb8f;
+            --el-color-success-light-9: #f6ffed;
+
+            --el-color-warning: #faad14;
+            --el-color-warning-light-3: #ffc53d;
+            --el-color-warning-light-5: #ffd666;
+            --el-color-warning-light-7: #ffe7ba;
+            --el-color-warning-light-9: #fffbf0;
+
+            --el-color-danger: #ff4d4f;
+            --el-color-danger-light-3: #ff7875;
+            --el-color-danger-light-5: #ffa39e;
+            --el-color-danger-light-7: #ffccc7;
+            --el-color-danger-light-9: #fff2f0;
+
+            --el-color-info: #2f54eb;
+            /* 沿用主色 */
+            --el-text-color-primary: rgba(0, 0, 0, 0.88);
+            --el-text-color-regular: rgba(0, 0, 0, 0.65);
+            --el-text-color-secondary: rgba(0, 0, 0, 0.45);
+            --el-text-color-placeholder: rgba(0, 0, 0, 0.45);
+            --el-border-color: #d9d9d9;
+            --el-border-color-light: #e8e8e8;
+            --el-border-color-lighter: #f0f0f0;
+            --el-border-color-extra-light: #f5f5f5;
+            --el-bg-color: #ffffff;
+            --el-bg-color-page: #fafafa;
+            --el-bg-color-overlay: rgba(0, 0, 0, 0.5);
+            --el-fill-color: rgba(0, 0, 0, 0.04);
+            --el-fill-color-light: rgba(0, 0, 0, 0.04);
+            --el-fill-color-lighter: rgba(0, 0, 0, 0.02);
+            --el-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+            --el-box-shadow-light: 0 3px 6px -4px rgba(0, 0, 0, 0.12);
+            --el-box-shadow-lighter: 0 6px 16px -8px rgba(0, 0, 0, 0.08);
+            --el-box-shadow-heavy: 0 12px 32px -8px rgba(0, 0, 0, 0.12);
+            --el-border-radius-base: 4px;
+            --el-border-radius-small: 2px;
+            --el-border-radius-round: 20px;
+            --el-border-radius-circle: 50%;
+            --el-font-size-base: 14px;
+            --el-font-size-small: 12px;
+            --el-font-size-large: 16px;
+            --el-font-size-extra-large: 18px;
+
+            /* 自定义渐变色 */
+            --gradient-primary: linear-gradient(135deg, #2f54eb 0%, #597ef7 100%);
+            --gradient-accent: linear-gradient(135deg, #2f54eb 0%, #722ed1 100%);
+            --gradient-secondary: linear-gradient(135deg, #d6e4ff 0%, #efdbff 100%);
+            --gradient-success: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+
+            /* 标签技能色 (保留) */
+            --skill-color-frontend: #2f54eb;
+            --skill-bg-frontend: rgba(47, 84, 235, 0.1);
+
+            /* 布局变量 */
+            --header-height: 64px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+
+            /* 卡片定制 */
+            --card-border-radius: 8px;
+            --color-bg-selected: #e6f7ff;
+
+            /* 流程管道自定义 */
+            --stage-card-bg: #ffffff;
+            --stage-card-border: 1px solid var(--el-border-color-light);
+            --stage-conversion-color: var(--el-text-color-secondary);
+
+            /* 提醒项 */
+            --warning-bg: #fffbe6;
+            --warning-border: #ffe58f;
+        }
+
+        /* ========== 全局基础样式 ========== */
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--el-bg-color-page);
+            color: var(--el-text-color-primary);
+            line-height: 1.5;
+        }
+
+        /* 滚动条 (来自index.scss) */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        /* 布局容器 */
+        .dashboard-main {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 24px 32px;
+        }
+
+        /* 面包屑 */
+        .breadcrumb {
+            font-size: 14px;
+            color: var(--el-text-color-secondary);
+            margin-bottom: 16px;
+        }
+
+        .breadcrumb .separator {
+            margin: 0 8px;
+        }
+
+        .breadcrumb .active {
+            color: var(--el-text-color-primary);
+            font-weight: 500;
+        }
+
+        /* 筛选栏 flex 模拟 element 风格 */
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            background-color: var(--el-bg-color);
+            padding: 16px 20px;
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--el-box-shadow);
+            margin-bottom: 24px;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            background-color: var(--el-bg-color);
+            border: 1px solid var(--el-border-color);
+            border-radius: var(--el-border-radius-base);
+            height: 36px;
+            padding: 0 12px;
+            color: var(--el-text-color-regular);
+            font-size: 14px;
+            cursor: default;
+        }
+
+        .filter-item i {
+            margin-left: 8px;
+            color: var(--el-text-color-placeholder);
+            font-size: 12px;
+        }
+
+        .btn-refresh {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--el-color-primary);
+            color: white;
+            border: none;
+            border-radius: var(--el-border-radius-base);
+            padding: 0 18px;
+            height: 36px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: default;
+            box-shadow: none;
+        }
+
+        .btn-refresh i {
+            margin-right: 6px;
+        }
+
+        /* KPI 卡片组 */
+        .kpi-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            flex: 1;
+            background-color: var(--el-bg-color);
+            border-radius: var(--card-border-radius);
+            padding: 20px 24px;
+            box-shadow: var(--el-box-shadow);
+            border: 1px solid var(--el-border-color-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .kpi-info h3 {
+            margin: 0 0 8px 0;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--el-text-color-secondary);
+        }
+
+        .kpi-number {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--el-text-color-primary);
+            line-height: 1.2;
+        }
+
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-secondary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--el-color-primary);
+            font-size: 24px;
+        }
+
+        /* 人才流程管道图 (六个阶段卡片) */
+        .pipeline-section {
+            background-color: var(--el-bg-color);
+            border-radius: var(--card-border-radius);
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--el-box-shadow);
+            border: 1px solid var(--el-border-color-light);
+        }
+
+        .pipeline-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--el-text-color-primary);
+            display: flex;
+            align-items: center;
+        }
+
+        .pipeline-title i {
+            color: var(--el-color-primary);
+            margin-right: 8px;
+        }
+
+        .stage-row {
+            display: flex;
+            align-items: stretch;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .stage-card {
+            flex: 1;
+            background-color: var(--el-bg-color);
+            border: 1px solid var(--el-border-color-light);
+            border-radius: 8px;
+            padding: 16px 12px;
+            text-align: center;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .stage-card:hover {
+            box-shadow: var(--el-box-shadow-light);
+            border-color: var(--el-color-primary-light-5);
+        }
+
+        .stage-name {
+            font-size: 14px;
+            color: var(--el-text-color-secondary);
+            margin-bottom: 8px;
+        }
+
+        .stage-count {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--el-text-color-primary);
+            line-height: 1.2;
+            margin-bottom: 4px;
+        }
+
+        .stage-trend {
+            font-size: 12px;
+            color: var(--el-text-color-secondary);
+        }
+
+        .trend-up {
+            color: var(--el-color-success);
+        }
+
+        .trend-down {
+            color: var(--el-color-danger);
+        }
+
+        .trend-steady {
+            color: var(--el-text-color-placeholder);
+        }
+
+        /* 转化率行 (对应阶段之间) */
+        .conversion-row {
+            display: flex;
+            gap: 16px;
+            margin-top: 4px;
+            margin-bottom: 8px;
+        }
+
+        .conversion-item {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            color: var(--el-text-color-secondary);
+            background: var(--el-fill-color-lighter);
+            padding: 6px 0;
+            border-radius: 30px;
+        }
+
+        .conversion-item strong {
+            color: var(--el-color-primary);
+            font-weight: 600;
+            margin-left: 4px;
+        }
+
+        /* 双栏布局 (漏斗+趋势) */
+        .chart-row {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .chart-card {
+            flex: 1;
+            background-color: var(--el-bg-color);
+            border-radius: var(--card-border-radius);
+            padding: 20px;
+            box-shadow: var(--el-box-shadow);
+            border: 1px solid var(--el-border-color-light);
+        }
+
+        .chart-header {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+        }
+
+        .chart-header i {
+            color: var(--el-color-primary);
+            margin-right: 8px;
+        }
+
+        /* 漏斗模拟 (五个条) */
+        .funnel-stage {
+            display: flex;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .funnel-label {
+            width: 60px;
+            font-size: 13px;
+            color: var(--el-text-color-regular);
+        }
+
+        .funnel-bar-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .funnel-bar {
+            height: 24px;
+            background: linear-gradient(90deg, var(--el-color-primary-light-5), var(--el-color-primary));
+            border-radius: 30px;
+            transition: width 0.2s;
+        }
+
+        .funnel-percent {
+            width: 45px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--el-text-color-primary);
+        }
+
+        /* 趋势图模拟 (折线占位) */
+        .trend-placeholder {
+            background: var(--el-fill-color-lighter);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .trend-legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .legend-item {
+            font-size: 12px;
+            color: var(--el-text-color-regular);
+            display: flex;
+            align-items: center;
+        }
+
+        .trend-line-svg {
+            width: 100%;
+            height: 100px;
+            background: var(--el-bg-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 0 8px;
+        }
+
+        .trend-line-svg span {
+            width: 12px;
+            background-color: var(--el-color-primary-light-5);
+            border-radius: 4px 4px 0 0;
+            height: calc(70% - 20px);
+        }
+
+        .trend-line-svg span:nth-child(2) {
+            height: 50px;
+            background-color: var(--el-color-primary);
+        }
+
+        .trend-line-svg span:nth-child(3) {
+            height: 65px;
+            background-color: var(--el-color-success);
+        }
+
+        .trend-line-svg span:nth-child(4) {
+            height: 32px;
+            background-color: var(--el-color-warning);
+        }
+
+        .trend-line-svg span:nth-child(5) {
+            height: 45px;
+            background-color: var(--el-color-danger);
+        }
+
+        .trend-line-svg span:nth-child(6) {
+            height: 28px;
+            background-color: var(--el-color-info);
+        }
+
+        .trend-line-svg span:nth-child(7) {
+            height: 55px;
+            background-color: var(--el-color-primary-light-3);
+        }
+
+        /* 顾问分布 */
+        .consultant-section {
+            background-color: var(--el-bg-color);
+            border-radius: var(--card-border-radius);
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--el-box-shadow);
+            border: 1px solid var(--el-border-color-light);
+        }
+
+        .consultant-row {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dashed var(--el-border-color-lighter);
+        }
+
+        .consultant-row:last-child {
+            border-bottom: none;
+        }
+
+        .consultant-name {
+            width: 100px;
+            font-weight: 600;
+            color: var(--el-color-primary);
+            cursor: default;
+        }
+
+        .consultant-stages {
+            flex: 1;
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+            color: var(--el-text-color-regular);
+        }
+
+        .consultant-stages span {
+            background: var(--el-fill-color-lighter);
+            padding: 4px 10px;
+            border-radius: 30px;
+        }
+
+        .consultant-stages i {
+            margin-right: 4px;
+            color: var(--el-text-color-placeholder);
+        }
+
+        /* 待处理提醒 */
+        .reminder-section {
+            background-color: var(--el-bg-color);
+            border-radius: var(--card-border-radius);
+            padding: 20px 24px;
+            box-shadow: var(--el-box-shadow);
+            border: 1px solid var(--el-border-color-light);
+        }
+
+        .reminder-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--el-border-color-lighter);
+        }
+
+        .reminder-item:last-child {
+            border-bottom: none;
+        }
+
+        .reminder-icon {
+            width: 36px;
+            height: 36px;
+            background-color: var(--el-color-primary-light-9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            color: var(--el-color-primary);
+        }
+
+        .reminder-content {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .reminder-content strong {
+            color: var(--el-text-color-primary);
+            font-weight: 600;
+        }
+
+        .reminder-link {
+            color: var(--el-color-primary);
+            font-size: 13px;
+            cursor: default;
+            text-decoration: none;
+            border-left: 1px solid var(--el-border-color);
+            padding-left: 16px;
+            margin-left: 16px;
+        }
+
+        .reminder-link i {
+            font-size: 12px;
+            margin-left: 4px;
+        }
+
+        /* 一些点缀 */
+        .text-small {
+            font-size: 12px;
+            color: var(--el-text-color-placeholder);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background-color: var(--el-color-primary-light-9);
+            color: var(--el-color-primary);
+            font-size: 12px;
+        }
+
+        /* 增强管道专属样式 */
+        .pipeline-section.enhanced {
+            padding-bottom: 16px;
+        }
+
+        .title-badge {
+            margin-left: 12px;
+            font-size: 13px;
+            font-weight: 400;
+            background: var(--el-fill-color-lighter);
+            padding: 2px 10px;
+            border-radius: 30px;
+            color: var(--el-text-color-secondary);
+        }
+
+        .pipeline-flow {
+            display: flex;
+            align-items: stretch;
+            gap: 8px;
+            margin: 20px 0 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .pipeline-flow .stage-card {
+            flex: 1 1 130px;
+            min-width: 130px;
+            background: var(--el-bg-color);
+            border: 1px solid var(--el-border-color-light);
+            border-radius: 12px;
+            padding: 14px 12px;
+            transition: all 0.2s;
+            cursor: pointer;
+            position: relative;
+            box-shadow: var(--el-box-shadow);
+        }
+
+        .pipeline-flow .stage-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--el-color-primary);
+            box-shadow: var(--el-box-shadow-light);
+        }
+
+        .stage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .stage-header .stage-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--el-text-color-secondary);
+        }
+
+        .stage-header .stage-count {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--el-text-color-primary);
+            line-height: 1;
+        }
+
+        .stage-progress {
+            height: 6px;
+            background: var(--el-fill-color-lighter);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .stage-progress .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--el-color-primary-light-5), var(--el-color-primary));
+            border-radius: 10px;
+        }
+
+        .stage-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--el-text-color-placeholder);
+        }
+
+        .stage-meta i {
+            margin-right: 3px;
+        }
+
+        .trend-badge {
+            padding: 2px 6px;
+            border-radius: 20px;
+            background: var(--el-fill-color-lighter);
+        }
+
+        .trend-up {
+            color: var(--el-color-success);
+        }
+
+        .trend-down {
+            color: var(--el-color-danger);
+        }
+
+        .trend-steady {
+            color: var(--el-text-color-secondary);
+        }
+
+        .warning-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--el-color-warning);
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+
+        /* 转化箭头 */
+        .flow-arrow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px;
+            color: var(--el-text-color-secondary);
+            font-size: 13px;
+        }
+
+        .flow-arrow .arrow-percent {
+            font-weight: 600;
+            color: var(--el-color-primary);
+            background: var(--el-color-primary-light-9);
+            padding: 2px 8px;
+            border-radius: 30px;
+            margin-bottom: 4px;
+            white-space: nowrap;
+        }
+
+        .flow-arrow i {
+            font-size: 20px;
+            color: var(--el-border-color-darker);
+        }
+
+        /* 底部提示 */
+        .pipeline-footer {
+            text-align: center;
+            font-size: 12px;
+            color: var(--el-text-color-placeholder);
+            border-top: 1px dashed var(--el-border-color-lighter);
+            padding-top: 16px;
+            margin-top: 8px;
+        }
+
+        .pipeline-footer i {
+            margin-right: 4px;
+        }
+
+        /* 响应式：小屏幕时箭头换行 */
+        @media (max-width: 1024px) {
+            .pipeline-flow {
+                flex-wrap: wrap;
+            }
+
+            .flow-arrow {
+                flex-direction: row;
+                width: 100%;
+                gap: 4px;
+                margin: 4px 0;
+            }
+
+            .flow-arrow i {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-main">
+        <!-- 面包屑 (无左侧菜单，只展示当前路径) -->
+        <div class="breadcrumb">
+            <span>人才库</span> <span class="separator">/</span> <span class="active">人才看板</span>
+        </div>
+
+        <!-- 筛选栏 (静态模拟) -->
+        <div class="filter-bar">
+            <div class="filter-item">时间范围：本周 <i class="fas fa-chevron-down"></i></div>
+            <div class="filter-item">顾问：全部顾问 <i class="fas fa-chevron-down"></i></div>
+            <div class="filter-item">职位：全部职位 <i class="fas fa-chevron-down"></i></div>
+            <div class="btn-refresh"><i class="fas fa-sync-alt"></i> 刷新</div>
+            <div style="flex:1; text-align: right; color: var(--el-text-color-placeholder); font-size:13px;">
+                数据实时更新
+            </div>
+        </div>
+
+        <!-- KPI卡片 -->
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h3>总人才数</h3>
+                    <div class="kpi-number">1,245</div>
+                    <div class="text-small" style="margin-top:6px;">较上周 +2.3%</div>
+                </div>
+                <div class="kpi-icon"><i class="fas fa-users"></i></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h3>近7天新增</h3>
+                    <div class="kpi-number">38</div>
+                    <div class="text-small" style="margin-top:6px;">昨日 +6</div>
+                </div>
+                <div class="kpi-icon"><i class="fas fa-user-plus"></i></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h3>近7天转化</h3>
+                    <div class="kpi-number">24</div>
+                    <div class="text-small" style="margin-top:6px;">待沟通 → 入职</div>
+                </div>
+                <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+            </div>
+        </div>
+
+        <!-- 人才流程管道图 -->
+        <!-- <div class="pipeline-section">
+            <div class="pipeline-title"><i class="fas fa-arrow-right-arrow-left"></i> 人才流程管道 · 本周</div>
+            <div class="stage-row">
+                <div class="stage-card">
+                    <div class="stage-name">待沟通</div>
+                    <div class="stage-count">23</div>
+                    <div class="stage-trend"><span class="trend-up">↑5%</span> vs 上周</div>
+                </div>
+                <div class="stage-card">
+                    <div class="stage-name">评估中</div>
+                    <div class="stage-count">12</div>
+                    <div class="stage-trend"><span class="trend-steady">→持平</span></div>
+                </div>
+                <div class="stage-card">
+                    <div class="stage-name">已推荐</div>
+                    <div class="stage-count">18</div>
+                    <div class="stage-trend"><span class="trend-down">↓2%</span></div>
+                </div>
+                <div class="stage-card">
+                    <div class="stage-name">面试中</div>
+                    <div class="stage-count">9</div>
+                    <div class="stage-trend"><span class="trend-up">↑10%</span></div>
+                </div>
+                <div class="stage-card">
+                    <div class="stage-name">Offer</div>
+                    <div class="stage-count">5</div>
+                    <div class="stage-trend"><span class="trend-steady">→持平</span></div>
+                </div>
+                <div class="stage-card">
+                    <div class="stage-name">入职</div>
+                    <div class="stage-count">7</div>
+                    <div class="stage-trend"><span class="trend-up">↑2%</span></div>
+                </div>
+            </div>
+            <div class="conversion-row">
+                <div class="conversion-item" style="visibility:hidden;"></div>
+                <div class="conversion-item"><strong>52%</strong> 待沟通→评估中</div>
+                <div class="conversion-item"><strong>67%</strong> 评估中→已推荐</div>
+                <div class="conversion-item"><strong>38%</strong> 已推荐→面试中</div>
+                <div class="conversion-item"><strong>55%</strong> 面试中→Offer</div>
+                <div class="conversion-item"><strong>80%</strong> Offer→入职</div>
+            </div>
+            <div
+                style="margin-top: 12px; font-size: 12px; color: var(--el-text-color-placeholder); text-align: center; border-top: 1px dashed var(--el-border-color-lighter); padding-top: 12px;">
+                <i class="fas fa-hand-pointer"></i> 点击任一阶段卡片可直接进入对应列表
+            </div>
+        </div> -->
+        <!-- 重新设计的人才流程管道 -->
+        <div class="pipeline-section enhanced">
+            <div class="pipeline-title">
+                <i class="fas fa-arrow-right-arrow-left"></i> 人才流程管道 · 本周
+                <span class="title-badge">总在途 74 人</span>
+            </div>
+
+            <!-- 阶段卡片 + 转化箭头 (使用flex布局，箭头作为伪元素或独立元素) -->
+            <div class="pipeline-flow">
+                <!-- 待沟通 -->
+                <div class="stage-card" data-stage="待沟通">
+                    <div class="stage-header">
+                        <span class="stage-name">待沟通</span>
+                        <span class="stage-count">23</span>
+                    </div>
+                    <div class="stage-progress">
+                        <div class="progress-bar" style="width: 31%"></div> <!-- 23/74 ≈31% -->
+                    </div>
+                    <div class="stage-meta">
+                        <span><i class="far fa-clock"></i> 平均 3.2天</span>
+                        <span class="trend-badge trend-up">↑5%</span>
+                    </div>
+                </div>
+
+                <!-- 转化箭头 1 -->
+                <div class="flow-arrow">
+                    <span class="arrow-percent">52%</span>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+
+                <!-- 评估中 -->
+                <div class="stage-card" data-stage="评估中">
+                    <div class="stage-header">
+                        <span class="stage-name">评估中</span>
+                        <span class="stage-count">12</span>
+                    </div>
+                    <div class="stage-progress">
+                        <div class="progress-bar" style="width: 16%"></div>
+                    </div>
+                    <div class="stage-meta">
+                        <span><i class="far fa-clock"></i> 平均 4.5天</span>
+                        <span class="trend-badge trend-steady">→持平</span>
+                    </div>
+                </div>
+
+                <!-- 转化箭头 2 -->
+                <div class="flow-arrow">
+                    <span class="arrow-percent">67%</span>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+
+                <!-- 已推荐 -->
+                <div class="stage-card" data-stage="已推荐">
+                    <div class="stage-header">
+                        <span class="stage-name">已推荐</span>
+                        <span class="stage-count">18</span>
+                    </div>
+                    <div class="stage-progress">
+                        <div class="progress-bar" style="width: 24%"></div>
+                    </div>
+                    <div class="stage-meta">
+                        <span><i class="far fa-clock"></i> 平均 2.1天</span>
+                        <span class="trend-badge trend-down">↓2%</span>
+                    </div>
+                </div>
+
+                <!-- 转化箭头 3 -->
+                <div class="flow-arrow">
+                    <span class="arrow-percent">38%</span>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+
+                <!-- 面试中 -->
+                <div class="stage-card" data-stage="面试中">
+                    <div class="stage-header">
+                        <span class="stage-name">面试中</span>
+                        <span class="stage-count">9</span>
+                    </div>
+                    <div class="stage-progress">
+                        <div class="progress-bar" style="width: 12%"></div>
+                    </div>
+                    <div class="stage-meta">
+                        <span><i class="far fa-clock"></i> 平均 5.8天 <span class="warning-dot" title="滞留偏长"></span></span>
+                        <span class="trend-badge trend-up">↑10%</span>
+                    </div>
+                </div>
+
+                <!-- 转化箭头 4 -->
+                <div class="flow-arrow">
+                    <span class="arrow-percent">55%</span>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+
+                <!-- Offer -->
+                <div class="stage-card" data-stage="Offer">
+                    <div class="stage-header">
+                        <span class="stage-name">Offer</span>
+                        <span class="stage-count">5</span>
+                    </div>
+                    <div class="stage-progress">
+                        <div class="progress-bar" style="width: 7%"></div>
+                    </div>
+                    <div class="stage-meta">
+                        <span><i class="far fa-clock"></i> 平均 2.3天</span>
+                        <span class="trend-badge trend-steady">→持平</span>
+                    </div>
+                </div>
+
+                <!-- 转化箭头 5 -->
+                <div class="flow-arrow">
+                    <span class="arrow-percent">80%</span>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+
+                <!-- 入职 -->
+                <div class="stage-card" data-stage="入职">
+                    <div class="stage-header">
+                        <span class="stage-name">入职</span>
+                        <span class="stage-count">7</span>
+                    </div>
+                    <div class="stage-progress">
+                        <div class="progress-bar" style="width: 9%"></div>
+                    </div>
+                    <div class="stage-meta">
+                        <span><i class="far fa-clock"></i> 平均 1.0天</span>
+                        <span class="trend-badge trend-up">↑2%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部交互提示 -->
+            <div class="pipeline-footer">
+                <i class="fas fa-hand-pointer"></i> 点击任意卡片查看该阶段候选人列表 · 转化率基于本周流转数据
+            </div>
+        </div>
+        <!-- 转化漏斗 + 趋势图 左右两栏 -->
+        <div class="chart-row">
+            <!-- 左侧漏斗 -->
+            <div class="chart-card">
+                <div class="chart-header"><i class="fas fa-filter"></i> 转化漏斗（本周）</div>
+                <div class="funnel-stage">
+                    <span class="funnel-label">待沟通</span>
+                    <div class="funnel-bar-wrapper">
+                        <div class="funnel-bar" style="width: 100%;"></div>
+                        <span class="funnel-percent">100%</span>
+                    </div>
+                </div>
+                <div class="funnel-stage">
+                    <span class="funnel-label">评估中</span>
+                    <div class="funnel-bar-wrapper">
+                        <div class="funnel-bar" style="width: 52%;"></div>
+                        <span class="funnel-percent">52%</span>
+                    </div>
+                </div>
+                <div class="funnel-stage">
+                    <span class="funnel-label">已推荐</span>
+                    <div class="funnel-bar-wrapper">
+                        <div class="funnel-bar" style="width: 35%;"></div>
+                        <span class="funnel-percent">35%</span>
+                    </div>
+                </div>
+                <div class="funnel-stage">
+                    <span class="funnel-label">面试中</span>
+                    <div class="funnel-bar-wrapper">
+                        <div class="funnel-bar" style="width: 17%;"></div>
+                        <span class="funnel-percent">17%</span>
+                    </div>
+                </div>
+                <div class="funnel-stage">
+                    <span class="funnel-label">Offer</span>
+                    <div class="funnel-bar-wrapper">
+                        <div class="funnel-bar" style="width: 9%;"></div>
+                        <span class="funnel-percent">9%</span>
+                    </div>
+                </div>
+                <div class="funnel-stage">
+                    <span class="funnel-label">入职</span>
+                    <div class="funnel-bar-wrapper">
+                        <div class="funnel-bar" style="width: 7%;"></div>
+                        <span class="funnel-percent">7%</span>
+                    </div>
+                </div>
+            </div>
+            <!-- 右侧趋势 -->
+            <div class="chart-card">
+                <div class="chart-header"><i class="fas fa-chart-line"></i> 各阶段趋势（近7天）</div>
+                <div class="trend-placeholder">
+                    <div class="trend-legend">
+                        <span class="legend-item"><span class="legend-dot"
+                                style="background: var(--el-color-primary);"></span>待沟通</span>
+                        <span class="legend-item"><span class="legend-dot"
+                                style="background: var(--el-color-success);"></span>评估中</span>
+                        <span class="legend-item"><span class="legend-dot"
+                                style="background: var(--el-color-warning);"></span>已推荐</span>
+                        <span class="legend-item"><span class="legend-dot"
+                                style="background: var(--el-color-danger);"></span>面试中</span>
+                        <span class="legend-item"><span class="legend-dot"
+                                style="background: var(--el-color-info);"></span>Offer</span>
+                        <span class="legend-item"><span class="legend-dot" style="background: #722ed1;"></span>入职</span>
+                    </div>
+                    <!-- 简单柱状模拟折线趋势 -->
+                    <div class="trend-line-svg">
+                        <span style="height:42px;"></span>
+                        <span style="height:58px;"></span>
+                        <span style="height:36px;"></span>
+                        <span style="height:62px;"></span>
+                        <span style="height:28px;"></span>
+                        <span style="height:45px;"></span>
+                        <span style="height:30px;"></span>
+                    </div>
+                    <div
+                        style="display: flex; justify-content: space-around; margin-top: 8px; font-size: 11px; color: var(--el-text-color-placeholder);">
+                        <span>11/03</span><span>11/04</span><span>11/05</span><span>11/06</span><span>11/07</span><span>11/08</span><span>11/09</span>
+                    </div>
+                    <div style="margin-top: 12px; font-size: 12px; color: var(--el-text-color-secondary);"><i
+                            class="fas fa-mouse-pointer"></i> 点击图例可切换显示</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 顾问分布 -->
+        <div class="consultant-section">
+            <div class="pipeline-title"><i class="fas fa-user-tie"></i> 顾问分布（按阶段）</div>
+            <div class="consultant-row">
+                <span class="consultant-name"><i class="fas fa-user-circle"></i> 顾问A</span>
+                <div class="consultant-stages">
+                    <span>待沟通8</span> <span>评估中5</span> <span>已推荐6</span> <span>面试中3</span> <span>Offer2</span>
+                    <span>入职1</span>
+                </div>
+                <span class="badge">点击筛选</span>
+            </div>
+            <div class="consultant-row">
+                <span class="consultant-name"><i class="fas fa-user-circle"></i> 顾问B</span>
+                <div class="consultant-stages">
+                    <span>待沟通5</span> <span>评估中3</span> <span>已推荐4</span> <span>面试中2</span> <span>Offer1</span>
+                    <span>入职2</span>
+                </div>
+                <span class="badge">点击筛选</span>
+            </div>
+            <div class="consultant-row">
+                <span class="consultant-name"><i class="fas fa-user-circle"></i> 顾问C</span>
+                <div class="consultant-stages">
+                    <span>待沟通4</span> <span>评估中2</span> <span>已推荐3</span> <span>面试中1</span> <span>Offer0</span>
+                    <span>入职1</span>
+                </div>
+                <span class="badge">点击筛选</span>
+            </div>
+            <div class="consultant-row" style="border-bottom: none;">
+                <span class="consultant-name"><i class="fas fa-user-circle"></i> 顾问D</span>
+                <div class="consultant-stages">
+                    <span>待沟通3</span> <span>评估中1</span> <span>已推荐2</span> <span>面试中1</span> <span>Offer1</span>
+                    <span>入职0</span>
+                </div>
+                <span class="badge">点击筛选</span>
+            </div>
+        </div>
+
+        <!-- 待处理提醒 -->
+        <div class="reminder-section">
+            <div class="pipeline-title"><i class="fas fa-bell"></i> 待处理提醒</div>
+            <div class="reminder-item">
+                <div class="reminder-icon"><i class="fas fa-exclamation-triangle" style="color: #faad14;"></i></div>
+                <div class="reminder-content"><strong>超过7天未联系：15人</strong> 需尽快跟进</div>
+                <div class="reminder-link">立即查看 → 待沟通列表 <i class="fas fa-arrow-right"></i></div>
+            </div>
+            <div class="reminder-item">
+                <div class="reminder-icon"><i class="fas fa-comment-dots" style="color: #52c41a;"></i></div>
+                <div class="reminder-content"><strong>近24小时有客户反馈：8人</strong> 查看反馈内容</div>
+                <div class="reminder-link">查看 → 已推荐列表 <i class="fas fa-arrow-right"></i></div>
+            </div>
+            <div class="reminder-item">
+                <div class="reminder-icon"><i class="fas fa-calendar-check" style="color: #2f54eb;"></i></div>
+                <div class="reminder-content"><strong>今天有面试安排：4场</strong> 面试中候选人</div>
+                <div class="reminder-link">查看 → 面试中列表 <i class="fas fa-arrow-right"></i></div>
+            </div>
+        </div>
+
+        <!-- 底部微小提示（设计完整性） -->
+        <div style="margin-top: 24px; text-align: center; font-size: 12px; color: var(--el-text-color-placeholder);">
+            人才流程看板 · 数据实时联动 | 点击任意数字可穿透至对应列表
+        </div>
+    </div>
+</body>
+
+</html>
